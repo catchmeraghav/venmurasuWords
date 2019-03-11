@@ -18,12 +18,13 @@ import fileinput
 import sys
 import os
 from collections import OrderedDict
-
+import bs4 as bs
 
 venmurasuFolder = "/home/raghav/Desktop/venbooks"
-venmurasuFolder = "C:\\Users\\Rajasimhan\\Desktop\\venbooks"
-books = OrderedDict([('Mudharkanal', [(2014, 1, 1), (2014, 2, 19)]), 
-                     ('Mazhaipadal', [(2014, 2, 24), (2014, 5, 26)]),
+#venmurasuFolder = "C:\\Users\\Rajasimhan\\Desktop\\venbooks"
+books = OrderedDict([
+                     ('Mudharkanal', [(2014, 1, 1), (2014, 2, 19)]), 
+                     ('Mazhaipadal', [(2014, 2, 24), (2014, 5, 24)]),
                      ('Vannakadal', [(2014, 6, 1), (2014, 8, 10)]),
                      ('Neelam', [(2014, 8, 20), (2014, 9, 26)]),
                      ('Prayagai', [(2014, 10, 20), (2015, 1, 19)]),
@@ -31,31 +32,19 @@ books = OrderedDict([('Mudharkanal', [(2014, 1, 1), (2014, 2, 19)]),
                      ('Indraneelam', [(2015,6,1), (2015,8,31)]), 
                      ('Kandeepam', [(2015,9,15), (2015,11,27)]),
                      ('Veyyon',[(2015,12,20),(2016,3,6)]),
-                     ('PanniruPadaikaLam',[(2016,03,20),(2016,06,22)]),
+                     ('PanniruPadaikaLam',[(2016,3,26),(2016,6,22)]),
                      ('Solvalarkadu',[(2016,07,20),(2016,9,17)]),
                      ('Kraatham',[(2016,10,20),(2017,1,10)]),
                      ('Maamalar',[(2017,2,1),(2017,5,6)]),
-                     ('Maamalar',[(2017,5,25),(2017,9,23)]),
                      ('Neerkolam',[(2017,5,25),(2017,8,29)]),
                      ('Ezhuthazhal', [(2017,9,15),(2017,12,2)]),
+                     ('Kuruthisaral', [(2017,12,17),(2018,3,5)]),
+                     ('Imaikanam', [(2018,3,25),(2018,5,16)]),
+                     ('Sennavengai', [(2018,6,1),(2018,8,21)]),
+                     ('ThisaitherVellam', [(2018,9,10),(2018,11,28)]),
+                     ('Kaarkadal', [(2018,12,25),(2019,3,12)]),
                         ])
-'''
-('Mudharkanal', [(2014, 1, 1), (2014, 2, 19)]), 
-                     ('Mazhaipadal', [(2014, 2, 24), (2014, 5, 26)]),
-                     ('Vannakadal', [(2014, 6, 1), (2014, 8, 10)]),
-                     ('Neelam', [(2014, 8, 20), (2014, 9, 26)]),
-                     ('Prayagai', [(2014, 10, 20), (2015, 1, 19)]),
-                     ('VenmugilNagaram', [(2015, 2, 1), (2015, 5, 2)]),
-                     ('Indraneelam', [(2015,6,1), (2015,8,31)]), 
-                     ('Kandeepam', [(2015,9,15), (2015,11,27)]),
-                     ('Veyyon',[(2015,12,20),(2016,3,6)]),
-                     ('PanniruPadaikaLam',[(2016,03,20),(2016,06,22)]),
-                     ('Solvalarkadu',[(2016,07,20),(2016,9,17)]),
-                     ('Kraatham',[(2016,10,20),(2017,1,10)]),
-                     ('Maamalar',[(2017,2,1),(2017,5,6)]),
-                     ('Maamalar',[(2017,5,25),(2017,9,23)]),
-                        ])
-'''
+#'''
 class downloadVenmurasu(object):
     ''' 
     A origin or kickstart class
@@ -98,7 +87,7 @@ class downloadVenmurasu(object):
 
                 
     def downloadChapterImage(self, imgDate, folder):
-        imgName = imgDate.strftime('%Y-%m-%d')+'.jpg'
+        imgName = imgDate.strftime('%Y-%m-%d')
         normalImgName = os.path.join(folder,imgName)
         bigImgName = os.path.join(folder,'big-'+imgName)
         
@@ -106,27 +95,23 @@ class downloadVenmurasu(object):
             pass
         else:
             folderFileName = self.makeFileName(imgDate, folder)
+            imgFilesList = []
             with open(folderFileName, 'rb') as fl:
-                for line in fl:
-                    if ('<img' in line and "wp-image" in line) or ('<img' in line and ".jpg" in line):
-                        img = line.split('src=')[1].split('"')[1]
-                        img = img.split('?')[0] if '?' in img else img
-                        urllib.urlretrieve (img, normalImgName)
-                        imgBig = line.split('href=')[1] if 'href'in line else None
-                        if imgBig: 
-                            imgBig = '' if '.jpg' not in imgBig else imgBig.split('"')[1]
-                            if imgBig =='':
-                                continue
-                            urllib.urlretrieve (imgBig, bigImgName) 
-                        
-                        #urllib.urlretrieve (imgBig, bigImgName)
-                        break
-            #if os.path.exists(bigImgName):
-            #    self.replaceSrc(imgDate, folder, bigImgName)
-            #    ##print imgName
-            #elif os.path.exists(normalImgName):
-            #    self.replaceSrc(imgDate, folder, normalImgName)
-            #    ##print imgName
+                contentImg = fl.read()
+                soup = bs.BeautifulSoup(contentImg, 'html.parser')
+                images = soup.findAll('img')
+                imagesList = []
+                for image in images:
+                    imgLnk = image['src'].split('?')[0]
+                    if not ('venmurasu' in imgLnk or 'jeyamohan' in imgLnk) :
+                        continue
+                    imagesList.append( imgLnk )
+
+                print imagesList
+                counter=0
+                for imgItm in imagesList:
+                    urllib.urlretrieve (imgItm, imgName+'_'+str(counter)+'.jpg')
+                    counter+=1
         
     def downloadChapter(self, currentdate, folder):
         folderFileName = self.makeFileName(currentdate, folder)
@@ -145,7 +130,7 @@ class downloadVenmurasu(object):
                         urllib.urlretrieve (url,folderFileName)
                         break
                 
-    def downloadBook(self, startDate, stopDate, folder, image=True, text=True, makeWordDict=True):
+    def downloadBook(self, startDate, stopDate, folder, image=False, text=True, makeWordDict=True):
         currentdate = datetime.date(startDate[0], startDate[1], startDate[2])
         enddate = datetime.date(stopDate[0], stopDate[1], stopDate[2])
         while currentdate <= enddate:
@@ -165,7 +150,7 @@ class downloadVenmurasu(object):
                 os.makedirs(fldr, mode=0777)
 
 
-    
+   
                                 
 if __name__=="__main__":
     #Download the entire Venmurasu - required for start of work

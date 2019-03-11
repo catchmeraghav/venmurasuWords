@@ -9,7 +9,8 @@
 import datetime
 import os
 from tamil import utf8
-
+import bs4 as bs
+import codecs
 htmlCodeToTxt = {'&#32;':' ',
                 '&#33;':'!',
                 '&#34;':'"',
@@ -54,17 +55,22 @@ htmlCodeToTxt = {'&#32;':' ',
                 '&#8482;':'™',
                 '&nbsp' : ' '
                 }
-
+stopEndText = ( 'அனைத்து வெண்முரசு விவாதங்களும்',
+                'மகாபாரத அரசியல் பின்னணி வாசிப்புக்காக',
+                'வெண்முரசு வாசகர் விவாதக்குழுமம்',
+                'Posted in'
+              )
 class parseHTMLToTamilTxt:
     def __init__(self):
-        self.venmurasuFolder = "/home/raghav/Desktop/venmurasuBooks/VenmugilNagaram"
+        self.venmurasuFolder = "/home/raghav/Desktop/venbooks/VenmugilNagaram"
         self.chapterDate = '-'.join(['2015','02','21'])
         self.currentBookFolder = ""
         
     def convertChapterToText(self, chapterDate='', currentBookFolder=''):
         htmlFileName = self.formatFileNameFromDate(chapterDate, currentBookFolder)
         if htmlFileName:
-            return self.convertVenmurasuHtmlToText(htmlFileName)
+            return self.convertUsingBS(htmlFileName)
+            #return self.convertVenmurasuHtmlToText(htmlFileName)
         return False        
 
     def formatFileNameFromDate(self, chapterDate, currentBookFolder = ""):
@@ -96,7 +102,6 @@ class parseHTMLToTamilTxt:
         * I hope to write code very generic to get Tamil page content of any webpage
         *
         '''
-        
         textFileName = htmlFileName.replace('.html','.txt')
         with open(textFileName, 'w') as textFile:
             with open(htmlFileName, 'rb') as htmlFile:
@@ -119,7 +124,39 @@ class parseHTMLToTamilTxt:
                                 textFile.write(sentenceTamil)
                                 textFile.write('\n')
         return True
-                                        
+ 
+    def convertUsingBS(self, htmlFileName):
+        '''
+        *
+        * Convert a given HTML file, in a folder, to a text file fetching just the Tamil content
+        *
+        * Writing a bad code, specific for fetching Tamil content from venmurasu.in
+        *
+        * I hope to write code very generic to get Tamil page content of any webpage
+        *
+        '''
+        
+        textFileName = htmlFileName.replace('.html','.txt')
+        with codecs.open(textFileName, 'w', 'utf8') as textFile:
+            with open(htmlFileName, 'rb') as htmlFile:
+                htmlContent = htmlFile.read()
+                soup = bs.BeautifulSoup(htmlContent,'html.parser')
+                text = []
+                episodeFlag = False
+                for paragraph in soup.find_all('p'):
+                    txt = paragraph.string
+                    if txt:
+                        txt = txt.strip()
+                        for aKey in htmlCodeToTxt.keys():
+                            if aKey in text:
+                                txt = txt.replace(aKey, htmlCodeToTxt[aKey])
+                        text.append( txt )
+                    if episodeFlag:
+                        break
+                text = '\n'.join( text )
+                textFile.write(text)
+                textFile.write('\n')
+        return True                                       
 if __name__ == "__main__":
     chapterDate = datetime.date(2015, 2, 27)
     
