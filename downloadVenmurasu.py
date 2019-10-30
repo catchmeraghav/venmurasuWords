@@ -20,11 +20,11 @@ import os
 from collections import OrderedDict
 import bs4 as bs
 
-venmurasuFolder = "/home/raghav/Desktop/venbooks"
+venmurasuFolder = "/home/raghav/Desktop/venmurasuWords/venbooks/content"
 #venmurasuFolder = "C:\\Users\\Rajasimhan\\Desktop\\venbooks"
 books = OrderedDict([
                      ('Mudharkanal', [(2014, 1, 1), (2014, 2, 19)]), 
-                     ('Mazhaipadal', [(2014, 2, 24), (2014, 5, 24)]),
+                     ('Mazhaipadal', [(2014, 2, 24), (2014, 5, 26)]),
                      ('Vannakadal', [(2014, 6, 1), (2014, 8, 10)]),
                      ('Neelam', [(2014, 8, 20), (2014, 9, 26)]),
                      ('Prayagai', [(2014, 10, 20), (2015, 1, 19)]),
@@ -42,7 +42,10 @@ books = OrderedDict([
                      ('Imaikanam', [(2018,3,25),(2018,5,16)]),
                      ('Sennavengai', [(2018,6,1),(2018,8,21)]),
                      ('ThisaitherVellam', [(2018,9,10),(2018,11,28)]),
-                     ('Kaarkadal', [(2018,12,25),(2019,3,12)]),
+                     ('Kaarkadal',[(2018,12,25),(2019,3,22)]),
+                     ('Irutkani',[(2019,4,10),(2019,6,14)]),
+                     ('TheeyinEdai',[(2019,7,1),(2019,8,26)]),
+                     ('Neersudar', [(2019,9,15),(2019,10,05)]),
                         ])
 #'''
 class downloadVenmurasu(object):
