@@ -18,10 +18,11 @@ import fileinput
 import sys
 import os
 from collections import OrderedDict
-import bs4 as bs
+from bs4 import BeautifulSoup
 
-venmurasuFolder = "/home/raghav/Desktop/venmurasuWords/venbooks/content"
+venmurasuFolder = "/home/raghav/Desktop/venbooks"
 #venmurasuFolder = "C:\\Users\\Rajasimhan\\Desktop\\venbooks"
+
 books = OrderedDict([
                      ('Mudharkanal', [(2014, 1, 1), (2014, 2, 19)]), 
                      ('Mazhaipadal', [(2014, 2, 24), (2014, 5, 26)]),
@@ -32,7 +33,7 @@ books = OrderedDict([
                      ('Indraneelam', [(2015,6,1), (2015,8,31)]), 
                      ('Kandeepam', [(2015,9,15), (2015,11,27)]),
                      ('Veyyon',[(2015,12,20),(2016,3,6)]),
-                     ('PanniruPadaikaLam',[(2016,3,26),(2016,6,22)]),
+                     ('PanniruPadaikaLam',[(2016,03,20),(2016,06,22)]),
                      ('Solvalarkadu',[(2016,07,20),(2016,9,17)]),
                      ('Kraatham',[(2016,10,20),(2017,1,10)]),
                      ('Maamalar',[(2017,2,1),(2017,5,6)]),
@@ -42,12 +43,46 @@ books = OrderedDict([
                      ('Imaikanam', [(2018,3,25),(2018,5,16)]),
                      ('Sennavengai', [(2018,6,1),(2018,8,21)]),
                      ('ThisaitherVellam', [(2018,9,10),(2018,11,28)]),
-                     ('Kaarkadal',[(2018,12,25),(2019,3,22)]),
+                     ('Karkadal',[(2018,12,25),(2019,3,22)]),
                      ('Irutkani',[(2019,4,10),(2019,6,14)]),
                      ('TheeyinEdai',[(2019,7,1),(2019,8,26)]),
-                     ('Neersudar', [(2019,9,15),(2019,10,05)]),
-                        ])
-#'''
+                     ('Neersudar', [(2019,9,15),(2019,11,15)]),
+                     ('KalitrruYanaiNirai', [(2019,12,1),(2020,2,18)]),
+                     ('Kalporusirunurai', [(2020,3,15),(2020,6,9)]),
+                     ('MudhalaVin', [(2020,7,1),(2020,7,2)]),
+                   ])
+
+
+booksTamilNames = {
+                    'Mudharkanal' : u'முதற்கனல்',
+                    'Mazhaipadal' : u'மழைப்பாடல்',
+                    'Vannakadal' : u'வண்ணக்கடல்',
+                    'Neelam' : u'நீலம்',
+                    'Prayagai' : u'பிரயாகை',
+                    'VenmugilNagaram' : u'வெண்முகில் நகரம்',
+                    'Indraneelam' : u'இந்திரநீலம்',
+                    'Kandeepam' : u'காண்டீபம்',
+                    'Veyyon' : u'வெய்யோன்',
+                    'PanniruPadaikaLam' : u'பன்னிரு படைக்களம்',
+                    'Solvalarkadu' : u'சொல்வளர்காடு',
+                    'Kraatham' : u'கிராதம்',
+                    'Maamalar' : u'மாமலர்',
+                    'Neerkolam' : u'நீர்க்கோலம்',
+                    'Ezhuthazhal' : u'எழுதழல்',
+                    'Kuruthisaral' : u'குருதிச்சாரல்',
+                    'Imaikanam' : u'இமைக்கணம்',
+                    'Sennavengai' : u'செந்நா வேங்கை',
+                    'ThisaitherVellam' : u'திசைதேர் வெள்ளம்',
+                    'Karkadal' : u'கார்கடல்',
+                    'Irutkani' : u'இருட்கனி',
+                    'TheeyinEdai' : u'தீயின் எடை',
+                    'Neersudar' : u'நீர்ச்சுடர்',
+                    'KalitrruYanaiNirai' : u'களிற்றியானை நிரை',
+                    'Kalporusirunurai' : u'கல்பொருசிறுநுரை',
+                    'MudhalaVin' : u'முதலாவிண்',
+                  }                        
+
+
 class downloadVenmurasu(object):
     ''' 
     A origin or kickstart class
@@ -65,9 +100,12 @@ class downloadVenmurasu(object):
         '''
         global books
         global venmurasuFolder
+        global booksTamilNames
+        
         self.books = books
         self.venmurasuFolder = venmurasuFolder
-        
+        self.booksTamilNames = booksTamilNames
+
     def replaceSrc(self, currentdate, folder, replaceTxt):
         aChapter = self.makeFileName(currentdate, folder)
         for line in fileinput.input(aChapter, inplace=1):
@@ -100,25 +138,35 @@ class downloadVenmurasu(object):
             folderFileName = self.makeFileName(imgDate, folder)
             imgFilesList = []
             with open(folderFileName, 'rb') as fl:
-                contentImg = fl.read()
-                soup = bs.BeautifulSoup(contentImg, 'html.parser')
-                images = soup.findAll('img')
-                imagesList = []
-                for image in images:
-                    imgLnk = image['src'].split('?')[0]
-                    if not ('venmurasu' in imgLnk or 'jeyamohan' in imgLnk) :
-                        continue
-                    imagesList.append( imgLnk )
-
-                print imagesList
-                counter=0
-                for imgItm in imagesList:
-                    urllib.urlretrieve (imgItm, imgName+'_'+str(counter)+'.jpg')
-                    counter+=1
+                for line in fl:
+                    if ('<img' in line and "wp-image" in line) or ('<img' in line and ".jpg" in line):
+                        img = line.split('src=')[1].split('"')[1]
+                        img = img.split('?')[0] if '?' in img else img
+                        #urllib.urlretrieve (img, normalImgName)
+                        imgFilesList.append(img)
+                        imgBig = line.split('href=')[1] if 'href'in line else None
+                        if imgBig: 
+                            imgBig = '' if '.jpg' not in imgBig else imgBig.split('"')[1]
+                            if imgBig =='':
+                                continue
+                            #urllib.urlretrieve (imgBig, bigImgName) 
+                            imgFilesList.append(imgBig)
+                        #urllib.urlretrieve (imgBig, bigImgName)
+            counter=0
+            for imgItm in imgFilesList:
+                urllib.urlretrieve (imgBig, imgName+'_'+str(counter)+'.jpg')
+                counter+=1
+            #if os.path.exists(bigImgName):
+            #    self.replaceSrc(imgDate, folder, bigImgName)
+            #    ##print imgName
+            #elif os.path.exists(normalImgName):
+            #    self.replaceSrc(imgDate, folder, normalImgName)
+            #    ##print imgName
         
     def downloadChapter(self, currentdate, folder):
+
         folderFileName = self.makeFileName(currentdate, folder)
-        if not os.path.exists(folderFileName):
+        if not (os.path.exists(folderFileName) and os.path.isfile(folderFileName)) :
             url = 'http://venmurasu.in/'+currentdate.strftime('%Y/%m/%d')
             urllib.urlretrieve (url,folderFileName)
             if currentdate > datetime.date(2013, 12, 31) and currentdate < datetime.date(2014, 5, 27):
@@ -132,12 +180,28 @@ class downloadVenmurasu(object):
                         del(fl)
                         urllib.urlretrieve (url,folderFileName)
                         break
-                
-    def downloadBook(self, startDate, stopDate, folder, image=False, text=True, makeWordDict=True):
+    
+    def downloadChapterFromJeyamohanDotIn(self, currentdate, folder):
+        folderFileName = self.makeFileName(currentdate, folder)
+        if not (os.path.exists(folderFileName) and os.path.isfile(folderFileName)) :
+            url = 'http://jeyamohan.in/date/'+currentdate.strftime('%Y/%m/%d')
+            urllib.URLopener.version = 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36 SE 2.X MetaSr 1.0'
+            urllib.urlretrieve (url,folderFileName)
+            soup = BeautifulSoup(open(folderFileName), "html.parser")
+            for elem in soup.find_all('a', href=True):
+                if elem.name == 'a' and "‘வெண்முரசு’ –" in elem.text.encode('utf-8'):
+                    url = elem['href']
+                    break
+            os.remove(folderFileName)
+            urllib.urlretrieve (url,folderFileName)
+
+
+    def downloadBook(self, startDate, stopDate, folder, image=True, text=True, makeWordDict=True):
         currentdate = datetime.date(startDate[0], startDate[1], startDate[2])
         enddate = datetime.date(stopDate[0], stopDate[1], stopDate[2])
         while currentdate <= enddate:
-            self.downloadChapter(currentdate, folder)
+            #self.downloadChapter(currentdate, folder)
+            self.downloadChapterFromJeyamohanDotIn(currentdate, folder)
             ##print 'Date: ', currentdate.strftime('%Y-%m-%d')
             if image:
                 self.downloadChapterImage(currentdate, folder)
@@ -153,7 +217,7 @@ class downloadVenmurasu(object):
                 os.makedirs(fldr, mode=0777)
 
 
-   
+    
                                 
 if __name__=="__main__":
     #Download the entire Venmurasu - required for start of work

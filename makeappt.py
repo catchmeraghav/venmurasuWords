@@ -167,6 +167,7 @@ def theLeftOutImg():
                 #print currentdate, "Image downloaded"
             currentdate += datetime.timedelta(days=1)
             
-#theLeftOutImg()
-completeGeneratePPT()
+if __name__ == "__main__":
+    #theLeftOutImg()
+    completeGeneratePPT()
 

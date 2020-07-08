@@ -15,7 +15,6 @@
 '''
 
 import re
-from tamil import utf8
 from downloadVenmurasu import downloadVenmurasu
 
 class makeSentencesForChapter(object):

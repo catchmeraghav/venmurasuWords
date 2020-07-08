@@ -70,7 +70,7 @@ class parseHTMLToTamilTxt:
         htmlFileName = self.formatFileNameFromDate(chapterDate, currentBookFolder)
         if htmlFileName:
             return self.convertUsingBS(htmlFileName)
-            #return self.convertVenmurasuHtmlToText(htmlFileName)
+            return self.convertVenmurasuHtmlToText(htmlFileName)
         return False        
 
     def formatFileNameFromDate(self, chapterDate, currentBookFolder = ""):
@@ -102,6 +102,7 @@ class parseHTMLToTamilTxt:
         * I hope to write code very generic to get Tamil page content of any webpage
         *
         '''
+        
         textFileName = htmlFileName.replace('.html','.txt')
         with open(textFileName, 'w') as textFile:
             with open(htmlFileName, 'rb') as htmlFile:
@@ -117,12 +118,20 @@ class parseHTMLToTamilTxt:
                             if exceptWd in aHTMLLine:
                                 flag = True
                                 break        
-                        if not flag:
-                            exceptLine = ''.join(utf8.get_letters('உங்கள் மின்னஞ்சல் இங்கே கொடுத்து அதன் வழி பதிவுகளைப் பெறவும்.'))
-                            sentenceTamil = ''.join(utf8.get_letters(aHTMLLine))
-                            if exceptLine != sentenceTamil:
-                                textFile.write(sentenceTamil)
-                                textFile.write('\n')
+                        ignore_lines = ['Post navigation',
+                                         'பின்னூட்டங்கள் மூடப்பட்டுள்ளது.',
+                                         'உங்கள் மின்னஞ்சல் இங்கே கொடுத்து அதன் வழி பதிவுகளைப் பெறவும்.',
+                                         'வெண்முரசு அனைத்து விவாதங்களும்',
+                                         'மகாபாரத அரசியல் பின்னணி வாசிப்புக்காக',
+                                         'வெண்முரசு வாசகர் விவாதக்குழுமம்',
+                                        ]
+
+                        for itm in ignore_lines:
+                            aHTMLLine.encode('utf-8').decode('utf-8').replace(itm.encode('utf-8').decode('utf-8'), '' )
+
+                        sentenceTamil = ''.join(utf8.get_letters(aHTMLLine))
+                        textFile.write(sentenceTamil)
+                        textFile.write('\n')
         return True
  
     def convertUsingBS(self, htmlFileName):
@@ -140,7 +149,7 @@ class parseHTMLToTamilTxt:
         with codecs.open(textFileName, 'w', 'utf8') as textFile:
             with open(htmlFileName, 'rb') as htmlFile:
                 htmlContent = htmlFile.read()
-                soup = bs.BeautifulSoup(htmlContent,'html.parser')
+                soup = bs.BeautifulSoup(htmlContent,'lxml')
                 text = []
                 episodeFlag = False
                 for paragraph in soup.find_all('p'):
@@ -154,7 +163,7 @@ class parseHTMLToTamilTxt:
                     if episodeFlag:
                         break
                 text = '\n'.join( text )
-                textFile.write(text)
+                textFile.writelines(text)
                 textFile.write('\n')
         return True                                       
 if __name__ == "__main__":

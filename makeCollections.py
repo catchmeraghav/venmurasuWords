@@ -15,8 +15,49 @@ from operator import itemgetter
 import bs4 as bs
 from collections import OrderedDict
 import sqlite3
+import time
+import shutil
+from bs4 import BeautifulSoup
+
+
 
 dl = downloadVenmurasu()
+
+characterList =[
+"இசை",
+"முழவு",
+"பறை",
+"தாளம்",
+"பாணம்",
+"விறலி",
+"யாழ்",
+"சுருதி",
+"மீட்டல்",
+"லயித்து",
+] 
+
+'''['ஹஸ்தி',]
+                    "பீஷ்மர்",
+                    "திருதராஷ்டிரர்",
+                    "காந்தாரி",
+                    "குந்தி",
+                    "கர்ணன்",
+                    "யுதிஷ்டிரர்",
+                    "பீமன்",
+                    "அர்ஜுனன்",
+                    "நகுலன்",
+                    "சகதேவன்",
+                    "திரௌபதி",
+                    "துரியோதனன்",
+                    "துச்சாதனன்",
+                    "கிருஷ்ணன்",
+                    "இளைய யாதவன்",
+                    "இளைய யாதவர்",
+                    "சாத்யகி",
+                    "திருஷ்டத்யும்னன்"
+                    ]
+
+'''
 
 def getStartDate(book):
     aDate = dl.books[book][0]
@@ -49,15 +90,15 @@ def makeVariousCollections():
         connect = durusCommit(folder, book)
         currentdate = getStartDate(book)
         enddate = getEndDate(book)
-        print 'Folder name: ',folder
+        #print 'Folder name: ',folder
 
         commaItems = {}
         nonCommaItems = {}
         with open(nocommaCollectionFile, 'a') as noncommacollectFile:
             with open(commaCollectionFile, 'a') as collectFile:
                 while currentdate <= enddate:
-                    print currentdate
-                    print 'Date: ', currentdate.strftime('%Y-%m-%d')
+                    #print currentdate
+                    #print 'Date: ', currentdate.strftime('%Y-%m-%d')
 
                     res = None
                     res = processChapterForCollections(currentdate, folder)
@@ -100,17 +141,229 @@ def processChapterForCollections(currentdate, folder, nonComma = False):
                         if item in sentence:
                             checkCount += sentence.count(item)
                     if checkCount > commaLimit:
-                        #print "Non comma item check: ", ''.join(utf8.get_letters(sentence))
+                        ##print "Non comma item check: ", ''.join(utf8.get_letters(sentence))
                         chapterList.append(sentence)
     if chapterList:
         return chapterList
     else:
         return None        
 
-def makeCharacterChapterList():
+
+def fetchResultsForList():
+    characterList = ['ஹஸ்தி',
+                    "பீஷ்மர்",
+                    "திருதராஷ்டிரர்",
+                    "காந்தாரி",
+                    "குந்தி",
+                    "கர்ணன்",
+                    "யுதிஷ்டிரர்",
+                    "பீமன்",
+                    "அர்ஜுனன்",
+                    "நகுலன்",
+                    "சகதேவன்",
+                    "திரௌபதி",
+                    "துரியோதனன்",
+                    "துச்சாதனன்",
+                    "கிருஷ்ணன்",
+                    "இளைய யாதவன்",
+                    "இளைய யாதவர்",
+                    "சாத்யகி",
+                    "திருஷ்டத்யும்னன்"
+                    ]
+
+
+def wordsRelations():
+    venmurasuConnect =  durusCommit(dl.venmurasuFolder, 'venmurasu')
+    venmurasuRoot =  venmurasuConnect.getRoot()
+    for book in dl.books.keys():
+        #print book
+        folder = dl.venmurasuFolder+'/'+book 
+        currentdate = getStartDate(book)
+        enddate = getEndDate(book)
+        currentTitle = ''
+
+        bookConnect = durusCommit(folder, book)
+
+        while currentdate <= enddate:
+ 
+            currentdate += datetime.timedelta(days=1)    
+
+
+def makeNeoThamizhan():
+
+    completeJson = []
+    sampleDict = {
+	"novelno":0,
+	"novelname":"",	
+	"sectionno":0,
+	"sectionname":"",	
+	"chapter":0,
+	"published_on":"",
+	"url":"",
+	"image":"",
+	"tags":[]
+    }
+
+    
+    venmurasuConnect =  durusCommit(dl.venmurasuFolder, 'venmurasu')
+    venmurasuRoot =  venmurasuConnect.getRoot()
+    for book in dl.books.keys():
+        #print book
+        folder = dl.venmurasuFolder+'/'+book 
+        currentdate = getStartDate(book)
+        enddate = getEndDate(book)
+        currentTitle = ''
+
+        bookConnect = durusCommit(folder, book)
+
+        while currentdate <= enddate:
+            htmlfileName = downloadVenmurasu.makeFileName(currentdate,folder, '.html')
+            htmlChapterHeader = ""
+            htmlChapterHeader, titleText = "", ""
+            with open(htmlfileName, 'r') as htmlObj:
+                htmlContent = htmlObj.read()
+                bsContent = bs.BeautifulSoup(htmlContent, 'html.parser')
+                htmlChapterHeader = bsContent.find_all('header', {"class": "entry-header"})[0].text
+
+                titleText = [para.getText() for para in bsContent.find_all('p') if para.getText()]
+                titleText = titleText[0].strip()
+                titleText = titleText if (not  titleText.count(':')== 1 and titleText.count('.') <= 1) and  titleText.count(':')== 1 or titleText.count('.') <= 1 else ''
+                currentTitle = titleText if titleText else currentTitle
+
+            chapterDict = copy.deepcopy(sampleDict)
+            chapterDict['novelno'] = dl.books.keys().index(book)+1
+            chapterDict["novelname"] = dl.booksTamilNames.get(book, 'வெண்முரசு	 ')
+            chapterDict["sectionno"] = 0
+            chapterDict["sectionname"] = currentTitle
+
+            delta = currentdate - getStartDate(book)
+            chapterDict["chapter"] = delta.days +1
+            chapterDict["published_on"] = currentdate.strftime("%d-%m-%Y")
+            chapterDict["url"] = 'https://venmurasu.in/'+currentdate.strftime("%Y/%m/%d")
+            
+            chapterDict["image"] = ""
+            chapterDict["tags"] = []
+
+            bookRoot = bookConnect.getRoot()
+            dateKey = tuple(currentdate.strftime('%Y-%m-%d').split('-'))
+            wordsOnDate = bookRoot[book][dateKey]['wordsDict'].keys()
+            for aWord in wordsOnDate:
+                if aWord in venmurasuRoot['Venmurasu'] and venmurasuRoot['Venmurasu'][aWord] < 5735:
+                    chapterDict["tags"].append(aWord)
+            completeJson.append(chapterDict)
+            currentdate += datetime.timedelta(days=1)    
+    collectionFolder = dl.venmurasuFolder+"/collection/title/"
+    if not os.path.exists(collectionFolder):
+        os.makedirs(collectionFolder, mode=0777)
+    with open(collectionFolder+'titles.txt', 'w') as titlefile:
+        pass
+        titlefile.write( str(completeJson) )
+    with open(collectionFolder+'book-title-date.txt', 'w') as titlefile:
+        pass
+        for itm in completeJson:
+            titlefile.write( str(itm['novelno']) + ' - ' + str(itm["chapter"]) + ' - ')
+            titlefile.write( itm['novelname'].encode('utf8') )
+            titlefile.write( itm['sectionname'].encode('utf8') )
+            titlefile.write( '\n' )
+
+
+
+
+    import pprint
+    class MyPrettyPrinter(pprint.PrettyPrinter):
+        def format(self, object, context, maxlevels, level):
+            if isinstance(object, unicode):
+                return (object.encode('utf8'), True, False)
+            return pprint.PrettyPrinter.format(self, object, context, maxlevels, level)
+
+    MyPrettyPrinter().pprint(completeJson)
+
+
+def makeAllBooks():
+    for book in dl.books.keys():
+        ignore_texts = ['Post navigation',
+                        u'பின்னூட்டங்கள் மூடப்பட்டுள்ளது.',
+                        u'உங்கள் மின்னஞ்சல் இங்கே கொடுத்து அதன் வழி பதிவுகளைப் பெறவும்.',
+                        u'வெண்முரசு அனைத்து விவாதங்களும்',
+                        u'மகாபாரத அரசியல் பின்னணி வாசிப்புக்காக',
+                        u'வெண்முரசு வாசகர் விவாதக்குழுமம்',
+                        ]
+        print book
+        existingfolder = dl.venmurasuFolder+'/'+book
+        folder = dl.venmurasuFolder+'/books/'
+        if not os.path.exists(folder):
+            os.makedirs(folder, mode=0777)
+        
+        bookFileName = folder+book+'.doc'
+        currentdate = getStartDate(book)
+        enddate = getEndDate(book)
+  
+        with open(bookFileName, 'wb') as outfile:
+            while currentdate <= enddate:
+                txtfileName = downloadVenmurasu.makeFileName(currentdate,existingfolder, '.html')
+                episodeText = ''
+                soup = BeautifulSoup(open(txtfileName), 'html.parser')
+                for elem in soup.find_all():
+                    if elem.name == 'footer':
+                       break
+                    if elem.name == 'p':
+
+                        extacted_text = elem.get_text().strip()
+                        if elem.find('a'):
+                            extacted_text = '--\t\t'+extacted_text
+                        episodeText += extacted_text
+                        episodeText += '\n\n'
+                outfile.write('\n\n')
+               
+                for itm in ignore_texts:
+                    episodeText.replace(itm, '')
+
+                outfile.write(episodeText.encode('utf-8'))
+                currentdate += datetime.timedelta(days=1) 
+
+def makeBookAndTitle():
+    for book in dl.books.keys():
+        folder = dl.venmurasuFolder+'/'+book 
+        currentdate = getStartDate(book)
+        enddate = getEndDate(book)
+        
+        printList = OrderedDict()
+        while currentdate <= enddate:
+            htmlfileName = downloadVenmurasu.makeFileName(currentdate,folder, '.html')
+            htmlChapterHeader = ""
+            htmlChapterHeader, titleText = "", ""
+            with open(htmlfileName, 'r') as htmlObj:
+                htmlContent = htmlObj.read()
+                bsContent = bs.BeautifulSoup(htmlContent, 'html.parser')
+                htmlChapterHeader = bsContent.find_all('header', {"class": "entry-header"})[0].text
+
+                titleText = [para.getText() for para in bsContent.find_all('p') if para.getText()]
+                titleText = titleText[0].strip()
+                titleText = titleText if (not  titleText.count(':')== 1 and titleText.count('.') <= 1) and  titleText.count(':')== 1 or titleText.count('.') <= 1 else ''
+                if titleText not in printList:
+                    printList[ titleText ] = ( currentdate, htmlChapterHeader )
+            currentdate += datetime.timedelta(days=1)    
+        strOut =  "=================================================\n"
+        strOut += book
+        strOut += "\n=================================================\n"
+        for i in printList:
+            strOut += '\n\t'
+            strOut += i 
+            strOut +=' --- '
+            strOut += printList[i][0].strftime("%m-%d-%Y")
+            strOut +=' --- '
+            strOut += printList[i][1].strip()
+        strOut +=  "\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+       
+        with open('titles.txt', 'w') as titleFile:
+            pass
+            #titleFile.write( strOut )
+        print strOut
+
+def makeCharacterChapterList(characterList):
     
     conn = sqlite3.connect('test'+datetime.datetime.now().strftime("%d_%B_%Y_%I_%M_")+'.db')
-    print "Opened database successfully";
+    #print "Opened database successfully";
     
     for book in dl.books.keys():
         folder = dl.venmurasuFolder+'/'+book 
@@ -125,28 +378,7 @@ def makeCharacterChapterList():
 
         currentdate = getStartDate(book)
         enddate = getEndDate(book)
-        print 'Folder name: ',folder
-
-        characterList = ['ஹஸ்தி',
-                        "பீஷ்மர்",
-                        "திருதராஷ்டிரர்",
-                        "காந்தாரி",
-                        "குந்தி",
-                        "கர்ணன்",
-                        "யுதிஷ்டிரர்",
-                        "பீமன்",
-                        "அர்ஜுனன்",
-                        "நகுலன்",
-                        "சகதேவன்",
-                        "திரௌபதி",
-                        "துரியோதனன்",
-                        "துச்சாதனன்",
-                        "கிருஷ்ணன்",
-                        "இளைய யாதவன்",
-                        "இளைய யாதவர்",
-                        "சாத்யகி",
-                        "திருஷ்டத்யும்னன்"
-                        ]
+        #print 'Folder name: ',folder
 
         characItems = { book : OrderedDict({itm : [] for itm in characterList }) }
 
@@ -235,6 +467,9 @@ def makeCharacterChapterList():
         writeCharacterToDB(conn, characItems, characterList)
     conn.close()
 
+
+
+
 def writeCharacterToDB(conn, characItems, characterList):
      
 
@@ -286,7 +521,7 @@ def completeConsolidateVenmurasu():
                     venDict[word] = bookRoot[book][book][word]
     venRoot = venmurasuDBConnect.getRoot()
     venRoot['Venmurasu'] = venDict
-    print 'Venmurasu keys: ', len(venDict.keys())
+    #print 'Venmurasu keys: ', len(venDict.keys())
     venmurasuDBConnect.connectionCommit()
 
 
@@ -294,13 +529,13 @@ def makeConcise():
     venmurasuDBConnect = durusCommit(dl.venmurasuFolder, 'venmurasu')
     venRoot = venmurasuDBConnect.getRoot()
 
-    print 'Venmurasu keys: ', len(venRoot['Venmurasu'].keys())
+    #print 'Venmurasu keys: ', len(venRoot['Venmurasu'].keys())
     
     venDict = {i.strip() : {'count' : j} for i,j in venRoot['Venmurasu'].items() }
     venDict = OrderedDict(sorted(venDict.iteritems() , key= lambda x: x[1]['count'] ))
     
     for runNum in range(5):
-        print "This is run : ", runNum
+        #print "This is run : ", runNum
         venNew = {}
         for i in venDict:
             count = 0
@@ -322,7 +557,7 @@ def makeConcise():
 
             #save every 10000 words 
             if len(venNew) % 10000 == 0:
-                print len(venNew)
+                #print len(venNew)
                 with open( 'concise.csv' , 'w') as fileOut:
                     for itm in venNew:
                         if venNew[itm].get('aggregate') :
@@ -337,7 +572,7 @@ def makeConcise():
     venmurasuNewDB = durusCommit(dl.venmurasuFolder, 'venmurasuConcise')
     venRoot = venmurasuNewDB.getRoot()
     venRoot['Venmurasu'] = venNew
-    print 'Venmurasu keys: ', len(venDict.keys())
+    #print 'Venmurasu keys: ', len(venDict.keys())
     venmurasuDBConnect.connectionCommit()
     
 
@@ -351,32 +586,32 @@ def writeToFileVenmurasuWords():
             fileOut.write( k+','+j+'\n'  )
 
 def consolidateWordsForBook(connect, book):
-    print " Book: ", book, " --- "
+    #print " Book: ", book, " --- "
     bookDict = {}
     bookRoot = connect.getRoot()
     folder = dl.venmurasuFolder+"/"+book
     currentdate = getStartDate(book)
     enddate = getEndDate(book)
-    print 'Folder name: ',folder
+    #print 'Folder name: ',folder
     
     while currentdate <= enddate:
         collectChapter(currentdate, book, folder, connect)
         chapterDateTuple = tuple(currentdate.strftime('%Y-%m-%d').split('-'))
-        print chapterDateTuple, len(bookRoot[book][chapterDateTuple]['wordsDict'].keys())
+        #print chapterDateTuple, len(bookRoot[book][chapterDateTuple]['wordsDict'].keys())
         for word in bookRoot[book][chapterDateTuple]['wordsDict'].keys():
             if word in bookDict:
                 bookDict[word] += bookRoot[book][chapterDateTuple]['wordsDict'][word]
             else:
                 bookDict[word] = bookRoot[book][chapterDateTuple]['wordsDict'][word]
         currentdate += datetime.timedelta(days=1)
-    print "Book unique words: ", len(bookRoot[book][book].keys())
+    #print "Book unique words: ", len(bookRoot[book][book].keys())
     bookRoot[book][book] = bookDict
     connect.connectionCommit()
 
 
 def collectChapter(currentdate, book, folder, connect):
     checkRoot = connect.getRoot()
-    print "Chapter : ", currentdate
+    #print "Chapter : ", currentdate
     dateTuple = tuple(currentdate.strftime('%Y-%m-%d').split('-'))
     if checkRoot.get(book) and dateTuple in checkRoot[book]:
         chapterDict = checkRoot[book][dateTuple]
@@ -407,4 +642,11 @@ if __name__ == '__main__':
     #completeConsolidateVenmurasu() 
     #getVenmurasuWords()
     #makeConcise()
-    makeCharacterChapterList()
+    
+    start = time.time()
+    #makeCharacterChapterList(characterList)
+    #makeBookAndTitle()
+    #makeAllBooks()
+    makeNeoThamizhan()
+    stop = time.time()
+    print stop - start
