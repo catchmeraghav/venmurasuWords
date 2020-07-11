@@ -179,6 +179,16 @@ def simultaneousDownload(createFolders = createFolders):
     with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
         executor.map( downloadOneLinkFileName, completeLinks)
     print "\n\n\n"
+    time.sleep(15)
+    print "\n\n\n"
+    with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+        executor.map( downloadOneLinkFileName, completeLinks)
+    print "\n\n\n"
+    time.sleep(15)
+    print "\n\n\n"
+    with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+        executor.map( downloadOneLinkFileName, completeLinks)
+    print "\n\n\n"
 
     stop = time.time()
     print stop-start, ' - seconds'
