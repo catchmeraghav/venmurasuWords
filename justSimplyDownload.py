@@ -75,7 +75,7 @@ def downloadDateHTMLFromJeyamohan():
                 urllib.urlretrieve (url, folderFileName)
                 counter+=1
                     
-        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
             executor.map( downloadTempFiles, tempLinks )
     stop = time.time()
     print "Downloaded all from Jeyamohan.in -- ", stop - start, " seconds"
