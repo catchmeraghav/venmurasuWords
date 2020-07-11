@@ -12,6 +12,8 @@ venmurasufolder = os.path.join(folder, 'venmurasu_in')
 jeyamohanfolder = os.path.join(folder, 'jeyamohan_in')
 imagefolder = os.path.join(folder, 'images')
 
+venmurasuInText = 'வெண்முரசு '
+
 books = OrderedDict([
                      ('Mudharkanal', [(2014, 1, 1), (2014, 2, 19)]), 
                      ('Mazhaipadal', [(2014, 2, 24), (2014, 5, 26)]),
@@ -52,7 +54,7 @@ booksTamilNames = {
                     'Kandeepam' : 'காண்டீபம்',
                     'Veyyon' : 'வெய்யோன்',
                     'PanniruPadaikaLam' : 'பன்னிரு படைக்களம்',
-                    'Solvalarkad' : 'சொல்வளர்காடு',
+                    'Solvalarkadu' : 'சொல்வளர்காடு',
                     'Kraatham' : 'கிராதம்',
                     'Maamalar' : 'மாமலர்',
                     'Neerkolam' : 'நீர்க்கோலம்',
