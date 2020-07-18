@@ -40,7 +40,7 @@ books = OrderedDict([
                      ('Neersudar', [(2019,9,15),(2019,11,15)]),
                      ('KalitrruYanaiNirai', [(2019,12,1),(2020,2,18)]),
                      ('Kalporusirunurai', [(2020,3,15),(2020,6,9)]),
-                     ('MudhalaVin', [(2020,7,1),(2020,7,15)]),
+                     ('MudhalaVin', [(2020,7,1),(2020,7,16)]),
                    ])
 
 booksTamilNames = {

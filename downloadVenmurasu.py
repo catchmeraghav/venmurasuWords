@@ -25,7 +25,6 @@ from constants import venmurasufolder
 from constants import jeyamohanfolder
 from constants import books
 from constants import booksTamilNames
-venmurasuFolder = venmurasufolder
 
 class downloadVenmurasu(object):
     ''' 
@@ -43,12 +42,14 @@ class downloadVenmurasu(object):
         writing this as a very generic class without any specific class variable
         '''
         global books
-        global venmurasuFolder
         global booksTamilNames
-        
+                
         self.books = books
-        self.venmurasuFolder = venmurasuFolder
+        self.venmurasuFolder = venmurasufolder
         self.booksTamilNames = booksTamilNames
+
+    def setVenmurasuFolder(self, folderName):
+        self.venmurasuFolder = folderName
 
     def replaceSrc(self, currentdate, folder, replaceTxt):
         aChapter = self.makeFileName(currentdate, folder)

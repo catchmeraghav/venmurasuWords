@@ -25,11 +25,12 @@ downloadFromJeyamohan = True
 
 def calculateNumberOfEpisodes():
     total = 0
+    print "Book\t\t\t\t", "StartDate\t\t", "EndDate\t\t", "Episodes"
     for key, val in books.items():
         endDate = datetime.date(val[1][0], val[1][1], val[1][2])
         startDate = datetime.date(val[0][0], val[0][1], val[0][2])
         delta = endDate - startDate 
-        print key,"\t\t\t\t", delta.days +1, " episodes"
+        print key,"\t\t\t\t", startDate.strftime('%d-%m-%Y\t\t'), endDate.strftime("%d-%m-%Y\t\t"), delta.days +1, " episodes"
         total += delta.days+1
 
     print total, " episodes"
@@ -112,7 +113,7 @@ def makeVenmurasuFromJeyamohanLinks():
                 if elem.name == 'a' and elem.text.strip() and venmurasuInText in linkText and booksTamilNames[key] in linkText:
                     linkName = elem['href']
                     completeLinks.append( (linkName, fileName, currentDate))
-                    print linkName, fileName, currentDate
+                    #print linkName, fileName, currentDate
                     break
             if not linkName:
                 print "\n\n\n", currentDate, "\n\n\n"
@@ -169,9 +170,9 @@ def simultaneousDownload(createFolders = createFolders):
         jLinks = makeVenmurasuFromJeyamohanLinks()
         completeLinks.extend(jLinks)
 
-        print "\n\n\n\n\n\n\n"
-        print completeLinks
-        print "\n\n\n\n\n\n\n"
+        #print "\n\n\n\n\n\n\n"
+        #print completeLinks
+        #print "\n\n\n\n\n\n\n"
 
     if createFolders:
         createBookFolders(completeLinks)

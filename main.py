@@ -3,14 +3,16 @@
 
 import os
 import datetime
+
 from downloadVenmurasu import downloadVenmurasu
 from parseHTMLToTamilTxt import parseHTMLToTamilTxt
 from makeWords import makeWordsForChapter
 from durusCommit import durusCommit
+import makeCollections
+from constants import jeyamohanfolder
 
 from collections import OrderedDict
 
-import makeCollections
 
 dl = downloadVenmurasu()
 
@@ -316,6 +318,11 @@ def makeCharacterChapterList():
    
 if __name__ == '__main__':
     # Either download or consolidate - for now - for DB lock reasons
+    
+    global dl
+    dl.setVenmurasuFolder(jeyamohanfolder)
+    print dl.venmurasuFolder
+
     completeDownloadAndThreeSteps(downloadFiles = True)
 
     chapter = False
