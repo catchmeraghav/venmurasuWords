@@ -4,7 +4,6 @@
 import os
 import datetime
 from downloadVenmurasu import downloadVenmurasu
-from tamil import utf8
 import json
 import codecs
 from collections import OrderedDict
@@ -359,6 +358,86 @@ def makeBookAndTitle():
             pass
             #titleFile.write( strOut )
         print strOut
+
+
+
+def makeWordSearch(word):
+    characterList = [ word ] 
+    outStr = ''
+    for book in dl.books.keys():
+        folder = dl.venmurasuFolder+'/'+book 
+        currentdate = getStartDate(book)
+        enddate = getEndDate(book)
+        characItems = { book : OrderedDict({itm : [] for itm in characterList }) }
+        while currentdate <= enddate:
+            fileName = downloadVenmurasu.makeFileName(currentdate,folder, '.txt')
+            
+            htmlfileName = downloadVenmurasu.makeFileName(currentdate,folder, '.html')
+            htmlChapterHeader = ""
+            htmlChapterHeader, titleText = "", ""
+            with open(htmlfileName, 'r') as htmlObj:
+                htmlContent = htmlObj.read()
+                bsContent = bs.BeautifulSoup(htmlContent, 'html.parser')
+                htmlChapterHeader = bsContent.find_all('header', {"class": "entry-header"})[0].text
+
+                titleText = [para.string  for para in bsContent.find_all('p') if para.string]
+                titleText = titleText[0]
+                titleText = titleText if titleText.count(':') else ''
+            htmlChapterHeader = htmlChapterHeader.encode('utf-8', 'ignore')
+            titleText = titleText.encode('utf-8', 'ignore')
+
+            with open(fileName, 'rb') as aTxtChapter:
+                chapterContent = aTxtChapter.read().replace('\n', '').split('.')
+                for item in characterList:
+                    firstOccurFlag = False
+                    completeList={}
+
+                    for sentence in chapterContent:
+                        
+                        # searching 2/3 of the word instead of the whole word
+                        # but the results are not great
+                        searchWord = item if len(item) < 20 else item[ : (len(item)*2/3)+1]  
+                        
+                        # searching only the word 
+                        searchWord = item # if len(item) < 20 else item[ : (len(item)*2/3)+1]
+                        if searchWord in sentence:
+                            if not firstOccurFlag: 
+                                sentence3 = []
+                                if chapterContent[0] == sentence:
+                                    sentence3 = chapterContent[:3]
+                                elif chapterContent[-1] == sentence:
+                                    sentence3 = chapterContent[-3:]
+                                else:
+                                    idx = chapterContent.index(sentence)
+                                    sentence3 = chapterContent[idx-1 : idx+2] 
+                                completeList= OrderedDict([('book', dl.booksTamilNames.get(book, 'வெண்முரசு       ')),
+                                                          ( 'chapter' , str(currentdate)), 
+                                                          ( 'link' , '<a href = "http://www.venmurasu.in/'+str(currentdate).replace('-','/')+'" target="_blank" rel="noopener noreferrer" >click</a>'),
+                                                          ( 'count' , sentence.count(item)),
+                                                          ( 'sentence' , '.'.join(sentence3)),
+                                                          ( 'header' , htmlChapterHeader),
+                                              ])
+                                if titleText:
+                                    completeList['title'] = titleText
+                                firstOccurFlag = True
+                            else:
+                                completeList['count'] += sentence.count(item)
+                    try:
+                        completeList['count'] = str(completeList['count'])
+                    except:
+                        pass
+
+                    characItems[book][ item ].append(completeList) 
+            currentdate += datetime.timedelta(days=1)    
+    
+        for item in characItems:
+            for name in characterList:
+                if characItems[item][name]:
+                    for itm in characItems[item][name]:
+                        for key, val in itm.items():
+                            outStr += key +':\t\t'+str(val).strip() + '\n'
+        outStr +="\n\n"
+    return outStr  
 
 def makeCharacterChapterList(characterList):
     
