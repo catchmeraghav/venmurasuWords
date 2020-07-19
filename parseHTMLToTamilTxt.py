@@ -8,7 +8,6 @@
 '''
 import datetime
 import os
-from tamil import utf8
 import bs4 as bs
 import codecs
 htmlCodeToTxt = {'&#32;':' ',
@@ -129,7 +128,7 @@ class parseHTMLToTamilTxt:
                         for itm in ignore_lines:
                             aHTMLLine.encode('utf-8').decode('utf-8').replace(itm.encode('utf-8').decode('utf-8'), '' )
 
-                        sentenceTamil = ''.join(utf8.get_letters(aHTMLLine))
+                        sentenceTamil = aHTMLLine
                         textFile.write(sentenceTamil)
                         textFile.write('\n')
         return True

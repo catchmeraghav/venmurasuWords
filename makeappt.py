@@ -5,7 +5,6 @@
 import os, re
 import datetime
 import random
-from tamil import utf8
 from downloadVenmurasu import downloadVenmurasu
 from parseHTMLToTamilTxt import parseHTMLToTamilTxt
 from makeSentences import makeSentencesForChapter
@@ -38,7 +37,6 @@ class pptMaker(object):
             if titleTxt:
                 try:
                     titleTxt = removeSplChr.sub('', titleTxt)
-                    titleTxt = ''.join(utf8.get_letters(titleTxt))
                     tf = body_shape.text_frame
                     tf.text = titleTxt
                 except:
@@ -57,7 +55,6 @@ class pptMaker(object):
                         subtitleTxt = selectsub()
                         subtitleTxt = unicode(subtitleTxt, "utf-8")     
                         subtitleTxt = removeSplChr.sub('', subtitleTxt)
-                        subtitleTxt = ''.join(utf8.get_letters(subtitleTxt))
                         subtitleTxt = subtitleTxt.split(' ')
                         subtitleTxt = '\n'.join([' '.join(subtitleTxt[5 * i: 5 * i + 5]) for i in range(0, len(subtitleTxt) / 5)])
     

@@ -8,7 +8,6 @@
 *
 '''
 import datetime
-from tamil import utf8
 
 class parseHTMLToTamilTxt:
     def __init__(self):
@@ -46,9 +45,9 @@ class parseHTMLToTamilTxt:
                                         break
                                 
                                 if not flag:
-                                    exceptLine = ''.join(utf8.get_letters('உங்கள் மின்னஞ்சல் இங்கே கொடுத்து அதன் வழி பதிவுகளைப் பெறவும்.'))
+                                    exceptLine = ''
                                     
-                                    sentenceTamil = ''.join(utf8.get_letters(aHTMLLine))
+                                    sentenceTamil = aHTMLLine
                                     if exceptLine != sentenceTamil:
                                         textFile.write(sentenceTamil)
                                         textFile.write('\n')

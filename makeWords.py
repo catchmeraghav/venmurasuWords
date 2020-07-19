@@ -15,7 +15,6 @@
 '''
 
 import re
-from tamil import utf8
 from downloadVenmurasu import downloadVenmurasu
 
 class makeWordsForChapter(object):
@@ -33,7 +32,6 @@ class makeWordsForChapter(object):
                 line = removeSplChr.sub('', line)
                 line = line.split()
                 for word in line:
-                    word = ''.join(utf8.get_letters(word))
                     if word in self.chapterWords:
                         self.chapterWords[word]+=1
                     else:
